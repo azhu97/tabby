@@ -20,7 +20,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   }
 });
 
-chrome.alarms.create("checkTabs", { periodInMinutes: 0.2 });
+chrome.alarms.create("checkTabs", { periodInMinutes: 0.5 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "checkTabs") {
@@ -84,7 +84,7 @@ chrome.windows.onFocusChanged.addListener((windowId) => {
     chrome.alarms.clear("checkTabs");
     console.log("Chrome is not focused, timer cleared");
   } else {
-    chrome.alarms.create("checkTabs", { periodInMinutes: 0.2 });
+    chrome.alarms.create("checkTabs", { periodInMinutes: 0.5 });
     console.log("Chrome is focused, timer resumed");
   }
 });

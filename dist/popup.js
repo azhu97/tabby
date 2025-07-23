@@ -82,7 +82,7 @@ document.getElementById("stop-resume")?.addEventListener("click", (event) => {
             }
             else {
                 console.log("Alarm created");
-                chrome.alarms.create("checkTabs", { periodInMinutes: 0.2 });
+                chrome.alarms.create("checkTabs", { periodInMinutes: 0.5 });
                 button.textContent = "Running";
                 button.style.backgroundColor = "green";
             }
