@@ -62,7 +62,8 @@ chrome.storage.sync.get("timeoutMinutes", (data) => {
   }
 });
 
-// Save timeout value
+// Save timeout value'
+
 document.getElementById("save-timeout")?.addEventListener("click", () => {
   const timeoutInput = document.getElementById("timeout") as HTMLInputElement;
   const timeout = parseInt(timeoutInput.value, 10);
@@ -78,11 +79,56 @@ document.getElementById("save-timeout")?.addEventListener("click", () => {
   }
 });
 
+// stop resume buttom
+document.getElementById("stop-resume")?.addEventListener("click", (event) => {
+  const button = event.target as HTMLButtonElement;
+  const currentText = button.textContent?.trim();
+
+  if (currentText === "Running") {
+    chrome.alarms.clear("checkTabs", (wasCleared) => {
+      if (wasCleared) {
+        console.log("Timer cleared");
+        button.textContent = "Stopped";
+        button.style.backgroundColor = "red";
+      } else {
+        console.log("Alarm wasn't active");
+      }
+    });
+  } else {
+    chrome.alarms.get("checkTabs", (alarm) => {
+      if (alarm) {
+        console.log("Alarm already running");
+      } else {
+        console.log("Alarm created");
+        chrome.alarms.create("checkTabs", { periodInMinutes: 0.2 });
+        button.textContent = "Running";
+        button.style.backgroundColor = "green";
+      }
+    });
+  }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   renderTabs();
+  setupStopResumeButton();
 
   const clearBtn = document.getElementById("clear-all");
   if (clearBtn) {
     clearBtn.addEventListener("click", clearAllTabs);
   }
 });
+
+function setupStopResumeButton() {
+  const button = document.getElementById("stop-resume") as HTMLButtonElement;
+  if (!button) return;
+
+  chrome.alarms.get("checkTabs", (alarm) => {
+    if (alarm) {
+      button.textContent = "Running";
+      button.style.backgroundColor = "green";
+    } else {
+      button.textContent = "Stopped";
+      button.style.backgroundColor = "red";
+    }
+  });
+}
