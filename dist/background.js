@@ -1,18 +1,29 @@
 "use strict";
-const DEFAULT_TIMEOUT_MINUTES = 5;
+const DEFAULT_TIMEOUT_MINUTES = 30;
 const tabActivity = {};
 chrome.tabs.onActivated.addListener(({ tabId }) => {
     tabActivity[tabId] = Date.now();
+    console.log(`[Tabby] Tab activated: ${tabId}, updated activity.`);
 });
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (changeInfo.status === "complete") {
         tabActivity[tabId] = Date.now();
+        console.log(`[Tabby] Tab updated: ${tabId}, updated activity.`);
     }
 });
-chrome.alarms.create("checkTabs", { periodInMinutes: 1 });
+chrome.alarms.create("checkTabs", { periodInMinutes: 0.2 });
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === "checkTabs") {
+        console.log("[Tabby] Alarm fired: checkTabs");
         closeInactiveTabs();
+    }
+});
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "tabby-activity" &&
+        sender.tab &&
+        sender.tab.id !== undefined) {
+        tabActivity[sender.tab.id] = Date.now();
+        console.log(`[Tabby] Activity from content script: Tab ${sender.tab.id}`);
     }
 });
 function closeInactiveTabs() {
@@ -33,6 +44,7 @@ function closeInactiveTabs() {
                         title: tab.title || tab.url,
                         closedAt: Date.now(),
                     });
+                    console.log(`[Tabby] Closing inactive tab: ${tab.id} (${tab.url})`);
                     delete tabActivity[tab.id];
                     chrome.tabs.remove(tab.id);
                 }
@@ -43,4 +55,16 @@ function closeInactiveTabs() {
 }
 chrome.tabs.onRemoved.addListener((tabId) => {
     delete tabActivity[tabId];
+    console.log(`[Tabby] Tab removed: ${tabId}, activity entry deleted.`);
+});
+// add a window focus thingy
+chrome.windows.onFocusChanged.addListener((windowId) => {
+    if (windowId === chrome.windows.WINDOW_ID_NONE) {
+        chrome.alarms.clear("checkTabs");
+        console.log("Chrome is not focused, timer cleared");
+    }
+    else {
+        chrome.alarms.create("checkTabs", { periodInMinutes: 0.2 });
+        console.log("Chrome is focused, timer resumed");
+    }
 });

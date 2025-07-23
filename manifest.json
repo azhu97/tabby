@@ -1,24 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "Auto Close Tabs",
+  "name": "Tabby - Automatic Tab Closer",
   "version": "1.0",
   "description": "Automatically closes inactive tabs and stores them for reopening later.",
   "permissions": ["tabs", "storage", "alarms", "scripting"],
   "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "background": {
     "service_worker": "dist/background.js"
   },
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icon16.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
-    }
-  },
-  "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "default_popup": "popup.html"
   }
 }

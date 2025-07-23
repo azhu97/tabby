@@ -36,6 +36,29 @@ function removeTab(index) {
 function clearAllTabs() {
     chrome.storage.sync.set({ closedTabs: [] }, renderTabs);
 }
+// Load saved timeout value
+chrome.storage.sync.get("timeoutMinutes", (data) => {
+    const timeoutInput = document.getElementById("timeout");
+    const timeoutLabel = document.getElementById("timeout-label");
+    const timeoutValue = data.timeoutMinutes ?? 30;
+    timeoutInput.value = timeoutValue.toString();
+    if (timeoutLabel) {
+        timeoutLabel.textContent = `Current timeout: ${timeoutValue} minute${timeoutValue === 1 ? "" : "s"}`;
+    }
+});
+// Save timeout value
+document.getElementById("save-timeout")?.addEventListener("click", () => {
+    const timeoutInput = document.getElementById("timeout");
+    const timeout = parseInt(timeoutInput.value, 10);
+    if (!isNaN(timeout) && timeout > 0) {
+        chrome.storage.sync.set({ timeoutMinutes: timeout }, () => {
+            const timeoutLabel = document.getElementById("timeout-label");
+            if (timeoutLabel) {
+                timeoutLabel.textContent = `Current timeout: ${timeout} minute${timeout === 1 ? "" : "s"}`;
+            }
+        });
+    }
+});
 document.addEventListener("DOMContentLoaded", () => {
     renderTabs();
     const clearBtn = document.getElementById("clear-all");
