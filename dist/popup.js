@@ -5,7 +5,7 @@ function renderTabs() {
         const list = document.getElementById("tab-list");
         list.innerHTML = "";
         if (closedTabs.length === 0) {
-            list.innerHTML = "<p>No closed tabs found.</p>";
+            list.innerHTML = `<p style="margin-left: 8px; margin-top:0px">No closed tabs found.</p>`;
             return;
         }
         closedTabs.forEach((tab, index) => {
