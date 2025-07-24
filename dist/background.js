@@ -12,14 +12,15 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         console.log(`[Tabby] Tab updated: ${tabId}, updated activity.`);
     }
 });
-chrome.alarms.create("checkTabs", { periodInMinutes: 0.25 });
-chrome.alarms.create("ensureCorrectness", { periodInMinutes: 0.3 });
+chrome.alarms.create("checkTabs", { periodInMinutes: 0.5 });
+chrome.alarms.create("ensureCorrectness", { periodInMinutes: 0.1 });
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === "checkTabs") {
         console.log("[Tabby] Alarm fired: checkTabs");
         closeInactiveTabs();
     }
     if (alarm.name === "ensureCorrectness") {
+        console.log("[Tabby] Alarm fired: ensureCorrectness");
         chrome.tabs.query({}, function (tabs) {
             tabs.forEach((tab) => {
                 const tabId = tab.id;

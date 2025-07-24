@@ -30,6 +30,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     closeInactiveTabs();
   }
   if (alarm.name === "ensureCorrectness") {
+    console.log("[Tabby] Alarm fired: ensureCorrectness")
     chrome.tabs.query({}, function (tabs) {
       tabs.forEach((tab) => {
         const tabId = tab.id;
