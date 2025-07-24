@@ -4,6 +4,7 @@ const tabActivity = {};
 chrome.tabs.onActivated.addListener(({ tabId }) => {
     tabActivity[tabId] = Date.now();
     console.log(`[Tabby] Tab activated: ${tabId}, updated activity.`);
+    console.log("Time: " + tabActivity[tabId]);
 });
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (changeInfo.status === "complete") {
@@ -11,11 +12,22 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         console.log(`[Tabby] Tab updated: ${tabId}, updated activity.`);
     }
 });
-chrome.alarms.create("checkTabs", { periodInMinutes: 0.5 });
+chrome.alarms.create("checkTabs", { periodInMinutes: 0.25 });
+chrome.alarms.create("ensureCorrectness", { periodInMinutes: 0.3 });
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === "checkTabs") {
         console.log("[Tabby] Alarm fired: checkTabs");
         closeInactiveTabs();
+    }
+    if (alarm.name === "ensureCorrectness") {
+        chrome.tabs.query({}, function (tabs) {
+            tabs.forEach((tab) => {
+                const tabId = tab.id;
+                if (tabId && !(tabId in tabActivity)) {
+                    tabActivity[tabId] = Date.now();
+                }
+            });
+        });
     }
 });
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
