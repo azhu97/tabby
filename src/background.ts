@@ -30,7 +30,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     closeInactiveTabs();
   }
   if (alarm.name === "ensureCorrectness") {
-    console.log("[Tabby] Alarm fired: ensureCorrectness")
+    console.log("[Tabby] Alarm fired: ensureCorrectness");
     chrome.tabs.query({}, function (tabs) {
       tabs.forEach((tab) => {
         const tabId = tab.id;
@@ -91,13 +91,37 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   console.log(`[Tabby] Tab removed: ${tabId}, activity entry deleted.`);
 });
 
+// variable to keep track of the time of unfocused
+// useful when putting computer to sleep and reopening computer
+let unfocusedAtTime: number | null = null;
 // add a window focus thingy
+
 chrome.windows.onFocusChanged.addListener((windowId) => {
   if (windowId === chrome.windows.WINDOW_ID_NONE) {
+    // window not focused
     chrome.alarms.clear("checkTabs");
     console.log("Chrome is not focused, timer cleared");
+    // set time of unfocus
+    unfocusedAtTime = Date.now();
   } else {
+    // window is focused
     chrome.alarms.create("checkTabs", { periodInMinutes: 0.5 });
     console.log("Chrome is focused, timer resumed");
+
+    // if elapsed time is greater than 10 minutes, reset the clock
+    if (unfocusedAtTime !== null) {
+      const elapseTimeInMs = Date.now() - unfocusedAtTime;
+      if (elapseTimeInMs > 10 * 60 * 1000) {
+        chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
+          tabs.forEach((tab) => {
+            const id = tab.id;
+            if (id !== undefined) {
+              tabActivity[id] = Date.now();
+            }
+          });
+        });
+      }
+      unfocusedAtTime = null; // Reset after handling
+    }
   }
 });
