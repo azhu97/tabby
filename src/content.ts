@@ -2,7 +2,7 @@
 
 function notifyActivity() {
   try {
-    chrome.runtime.sendMessage({ type: "tabby-activity" });
+    chrome.runtime.sendMessage({ type: "tabby-activity", time: Date.now() });
   } catch (err) {
     console.log(err);
   }
