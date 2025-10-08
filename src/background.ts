@@ -97,12 +97,12 @@ let unfocusedAtTime: number | null = null;
 // add a window focus thingy
 
 chrome.windows.onFocusChanged.addListener((windowId) => {
-  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+  if (windowId === chrome.windows.WINDOW_ID_NONE) { // it should record the amount of time that the window is not focused and update the tabActivity accordingly
     // window not focused
     chrome.alarms.clear("checkTabs");
     console.log("Chrome is not focused, timer cleared");
     // set time of unfocus
-    unfocusedAtTime = Date.now();
+    unfocusedAtTime = Date.now(); // unfocused time
   } else {
     // window is focused
     chrome.alarms.create("checkTabs", { periodInMinutes: 0.5 });
@@ -110,17 +110,16 @@ chrome.windows.onFocusChanged.addListener((windowId) => {
 
     // if elapsed time is greater than 10 minutes, reset the clock
     if (unfocusedAtTime !== null) {
-      const elapseTimeInMs = Date.now() - unfocusedAtTime;
-      if (elapseTimeInMs > 10 * 60 * 1000) {
-        chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
-          tabs.forEach((tab) => {
-            const id = tab.id;
-            if (id !== undefined) {
-              tabActivity[id] = Date.now();
-            }
-          });
-        });
-      }
+      const elapseTimeInMs = Date.now() - unfocusedAtTime; // elapse time since unfocused
+      chrome.tabs.query({}, (tabs: chrome.tabs.Tab[]) => {
+        tabs.forEach((tab) => {
+          const id = tab.id;
+          if (id !== undefined && tabActivity[id] !== undefined) {
+            tabActivity[id] += elapseTimeInMs; // update the activity time by adding the elapse time
+            console.log(`Tab ${id} activity updated to ${new Date(tabActivity[id]).toLocaleString()}`);
+          }
+        })
+      })
       unfocusedAtTime = null; // Reset after handling
     }
   }
